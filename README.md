@@ -5,7 +5,7 @@
 ## すぐ試す
 
 ```bash
-cd /Users/hara/Projects/menu-bar-pet
+cd /path/to/menu-bar-pet
 ./scripts/build-app.sh
 open dist/MenuBarPet.app
 ```
@@ -37,3 +37,9 @@ open dist/MenuBarPet.app
 - 参考値：安定時CPU 0.0%、常駐メモリ44,784KB
 
 数値はApple Silicon実機での短時間`ps`計測です。製品判断にはInstrumentsによる長時間計測と、ノッチ・複数画面・スリープ復帰の手動試験が必要です。
+
+## ライセンス
+
+自作のコード・資料は [MIT License](LICENSE) で公開しています。
+外部ライブラリ・素材・フォントは各権利者のライセンスに従い、このMITライセンスでは再許諾しません。
+ソース公開は、サービスの一般提供・ストア配布・本番運用の安全性を保証するものではありません。
