@@ -1,4 +1,5 @@
 import Foundation
+import MenuBarPetCore
 
 @MainActor
 final class UserDefaultsSettingsStore: SettingsStoring {

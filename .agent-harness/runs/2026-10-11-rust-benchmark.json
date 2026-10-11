@@ -1,0 +1,89 @@
+{
+  "method": "Same Swift 6.4 release compiler/native build system, 3 interleaved runs, synthetic data only",
+  "runs": {
+    "before": [
+      {
+        "claude_parse_ms": 1.5221249996102415,
+        "codex_parse_ms": 2436.601083332789,
+        "codex_tail_bytes": 441032,
+        "frames_ms": 362.21616666807677,
+        "iterations": 2000,
+        "parser_iterations": 200,
+        "presentation_ms": 33.051333333787625,
+        "sink": 1020600
+      },
+      {
+        "claude_parse_ms": 1.364291665595374,
+        "codex_parse_ms": 2418.973083333185,
+        "codex_tail_bytes": 441032,
+        "frames_ms": 363.530874999924,
+        "iterations": 2000,
+        "parser_iterations": 200,
+        "presentation_ms": 34.59754166578932,
+        "sink": 1020600
+      },
+      {
+        "claude_parse_ms": 1.486625000325148,
+        "codex_parse_ms": 2421.348041667443,
+        "codex_tail_bytes": 441032,
+        "frames_ms": 349.202041665194,
+        "iterations": 2000,
+        "parser_iterations": 200,
+        "presentation_ms": 33.32758333272068,
+        "sink": 1020600
+      }
+    ],
+    "after": [
+      {
+        "claude_parse_ms": 1.5259166666510282,
+        "codex_parse_ms": 121.80249999983062,
+        "codex_tail_bytes": 441032,
+        "frames_ms": 241.44924999927753,
+        "iterations": 2000,
+        "parser_iterations": 200,
+        "presentation_ms": 11.351291666869656,
+        "sink": 1020600
+      },
+      {
+        "claude_parse_ms": 1.2745833337248769,
+        "codex_parse_ms": 121.26950000129,
+        "codex_tail_bytes": 441032,
+        "frames_ms": 235.91754166591272,
+        "iterations": 2000,
+        "parser_iterations": 200,
+        "presentation_ms": 8.155250001436798,
+        "sink": 1020600
+      },
+      {
+        "claude_parse_ms": 1.3075000006210757,
+        "codex_parse_ms": 116.1868333347229,
+        "codex_tail_bytes": 441032,
+        "frames_ms": 224.51149999869813,
+        "iterations": 2000,
+        "parser_iterations": 200,
+        "presentation_ms": 8.554291665859637,
+        "sink": 1020600
+      }
+    ]
+  },
+  "medians_ms": {
+    "before": {
+      "presentation_ms": 33.32758333272068,
+      "frames_ms": 362.21616666807677,
+      "claude_parse_ms": 1.486625000325148,
+      "codex_parse_ms": 2421.348041667443
+    },
+    "after": {
+      "presentation_ms": 8.554291665859637,
+      "frames_ms": 235.91754166591272,
+      "claude_parse_ms": 1.3075000006210757,
+      "codex_parse_ms": 121.26950000129
+    }
+  },
+  "reduction_percent": {
+    "presentation_ms": 74.3,
+    "frames_ms": 34.9,
+    "claude_parse_ms": 12.0,
+    "codex_parse_ms": 95.0
+  }
+}

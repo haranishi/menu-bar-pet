@@ -1,0 +1,88 @@
+{
+  "scope": "Synthetic 2000-frame repeated 12-pose cycle, warm caches, same Swift/Rust release toolchain; not whole-app CPU or RSS",
+  "runs": [
+    {
+      "before": {
+        "claude_parse_ms": 1.2840416657127207,
+        "codex_parse_ms": 113.12683333380846,
+        "codex_tail_bytes": 441032,
+        "frames_ms": 210.71308333193883,
+        "iterations": 2000,
+        "parser_iterations": 200,
+        "presentation_ms": 5.618500001219218,
+        "sink": 1020600
+      },
+      "after": {
+        "claude_parse_ms": 1.2319166671659332,
+        "codex_parse_ms": 114.2643750008574,
+        "codex_tail_bytes": 441032,
+        "frames_ms": 7.700833331909962,
+        "iterations": 2000,
+        "parser_iterations": 200,
+        "presentation_ms": 5.666208333423128,
+        "sink": 1020600
+      }
+    },
+    {
+      "before": {
+        "claude_parse_ms": 1.3429166665446246,
+        "codex_parse_ms": 113.17829166728188,
+        "codex_tail_bytes": 441032,
+        "frames_ms": 209.09125000071072,
+        "iterations": 2000,
+        "parser_iterations": 200,
+        "presentation_ms": 5.496583333297167,
+        "sink": 1020600
+      },
+      "after": {
+        "claude_parse_ms": 1.2655000009544892,
+        "codex_parse_ms": 114.41137499969045,
+        "codex_tail_bytes": 441032,
+        "frames_ms": 7.68979166605277,
+        "iterations": 2000,
+        "parser_iterations": 200,
+        "presentation_ms": 5.482291666339734,
+        "sink": 1020600
+      }
+    },
+    {
+      "before": {
+        "claude_parse_ms": 1.3449583329929737,
+        "codex_parse_ms": 113.42325000077835,
+        "codex_tail_bytes": 441032,
+        "frames_ms": 211.27408333450148,
+        "iterations": 2000,
+        "parser_iterations": 200,
+        "presentation_ms": 5.415791667473968,
+        "sink": 1020600
+      },
+      "after": {
+        "claude_parse_ms": 1.3102499997330597,
+        "codex_parse_ms": 113.32566666715138,
+        "codex_tail_bytes": 441032,
+        "frames_ms": 7.987499999217107,
+        "iterations": 2000,
+        "parser_iterations": 200,
+        "presentation_ms": 5.613208331851638,
+        "sink": 1020600
+      }
+    }
+  ],
+  "medians": {
+    "frames_ms": {
+      "before": 210.71308333193883,
+      "after": 7.700833331909962,
+      "reduction_percent": 96.34534637805154
+    },
+    "presentation_ms": {
+      "before": 5.496583333297167,
+      "after": 5.613208331851638,
+      "reduction_percent": -2.1217725900375406
+    },
+    "codex_parse_ms": {
+      "before": 113.17829166728188,
+      "after": 114.2643750008574,
+      "reduction_percent": -0.9596216001990454
+    }
+  }
+}

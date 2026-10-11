@@ -1,7 +1,7 @@
 import Foundation
 
-enum DomainSelfTest {
-    static func run() -> Bool {
+public enum DomainSelfTest {
+    public static func run() -> Bool {
         var failures: [String] = []
 
         let mappings: [(Double, PetState)] = [
@@ -30,8 +30,34 @@ enum DomainSelfTest {
             failures.append("usage clamping")
         }
 
+        let now = Date(timeIntervalSince1970: 1_789_400_000)
+        let snapshot = AIUsageSnapshot(
+            provider: .codex,
+            profileName: ".codex-work",
+            windows: [
+                AIUsageWindow(label: "5時間", usedPercentage: 17, resetsAt: now.addingTimeInterval(-1)),
+                AIUsageWindow(label: "7日", usedPercentage: 88, resetsAt: now.addingTimeInterval(600)),
+            ],
+            observedAt: now,
+            sourcePath: "self-test"
+        )
+        if AIUsageAggregator.driveValue(
+            snapshots: [snapshot],
+            enabled: Set(AIUsageProvider.allCases),
+            now: now
+        ) != 88 {
+            failures.append("AI usage drive value takes the maximum live window")
+        }
+        if AIUsageAggregator.driveValue(
+            snapshots: [snapshot],
+            enabled: [.claudeCode],
+            now: now
+        ) != nil {
+            failures.append("AI usage drive value skips disabled providers")
+        }
+
         if failures.isEmpty {
-            print("PASS: 4 domain test groups")
+            print("PASS: 5 domain test groups")
             return true
         }
         failures.forEach { print("FAIL: \($0)") }

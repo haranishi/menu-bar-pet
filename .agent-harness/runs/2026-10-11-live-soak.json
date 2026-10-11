@@ -1,0 +1,319 @@
+{
+  "scope": "Same active hamster/AI mode at up to 30fps, popover closed, 300 seconds each. Comparison isolates NSStatusBarButton sizing vs CALayer updates, not the original pre-Rust app.",
+  "before_layer": {
+    "duration_seconds": 300,
+    "samples": [
+      {
+        "cpu_percent": 23.1,
+        "rss_kib": 102400,
+        "seconds": 0.08125102519989014
+      },
+      {
+        "cpu_percent": 19.7,
+        "rss_kib": 108176,
+        "seconds": 10.166885018348694
+      },
+      {
+        "cpu_percent": 20.9,
+        "rss_kib": 108480,
+        "seconds": 20.248674988746643
+      },
+      {
+        "cpu_percent": 20.9,
+        "rss_kib": 108496,
+        "seconds": 30.333546996116638
+      },
+      {
+        "cpu_percent": 22.6,
+        "rss_kib": 108544,
+        "seconds": 40.42254602909088
+      },
+      {
+        "cpu_percent": 21.8,
+        "rss_kib": 108560,
+        "seconds": 50.51043701171875
+      },
+      {
+        "cpu_percent": 20.3,
+        "rss_kib": 108560,
+        "seconds": 60.594704031944275
+      },
+      {
+        "cpu_percent": 20.3,
+        "rss_kib": 108576,
+        "seconds": 70.68110692501068
+      },
+      {
+        "cpu_percent": 20.6,
+        "rss_kib": 108576,
+        "seconds": 80.76858103275299
+      },
+      {
+        "cpu_percent": 21.9,
+        "rss_kib": 108576,
+        "seconds": 90.85864400863647
+      },
+      {
+        "cpu_percent": 22.7,
+        "rss_kib": 108576,
+        "seconds": 100.9482239484787
+      },
+      {
+        "cpu_percent": 21.2,
+        "rss_kib": 108512,
+        "seconds": 111.0350159406662
+      },
+      {
+        "cpu_percent": 22.9,
+        "rss_kib": 108288,
+        "seconds": 121.11444902420044
+      },
+      {
+        "cpu_percent": 21.2,
+        "rss_kib": 109472,
+        "seconds": 131.19005703926086
+      },
+      {
+        "cpu_percent": 25.6,
+        "rss_kib": 109872,
+        "seconds": 141.27118003368378
+      },
+      {
+        "cpu_percent": 14.4,
+        "rss_kib": 109504,
+        "seconds": 151.34597301483154
+      },
+      {
+        "cpu_percent": 20.4,
+        "rss_kib": 109824,
+        "seconds": 161.42716193199158
+      },
+      {
+        "cpu_percent": 25.6,
+        "rss_kib": 109872,
+        "seconds": 171.50425601005554
+      },
+      {
+        "cpu_percent": 25.2,
+        "rss_kib": 109904,
+        "seconds": 181.58138501644135
+      },
+      {
+        "cpu_percent": 23.7,
+        "rss_kib": 109920,
+        "seconds": 191.65412294864655
+      },
+      {
+        "cpu_percent": 22.3,
+        "rss_kib": 107680,
+        "seconds": 201.7342369556427
+      },
+      {
+        "cpu_percent": 22.8,
+        "rss_kib": 109856,
+        "seconds": 211.8118839263916
+      },
+      {
+        "cpu_percent": 23.5,
+        "rss_kib": 109872,
+        "seconds": 221.88937997817993
+      },
+      {
+        "cpu_percent": 25.9,
+        "rss_kib": 109888,
+        "seconds": 231.96956396102905
+      },
+      {
+        "cpu_percent": 28.4,
+        "rss_kib": 109888,
+        "seconds": 242.05118703842163
+      },
+      {
+        "cpu_percent": 23.8,
+        "rss_kib": 109888,
+        "seconds": 252.12458193302155
+      },
+      {
+        "cpu_percent": 22.4,
+        "rss_kib": 109664,
+        "seconds": 262.20096802711487
+      },
+      {
+        "cpu_percent": 16.7,
+        "rss_kib": 109664,
+        "seconds": 272.27445697784424
+      },
+      {
+        "cpu_percent": 21.9,
+        "rss_kib": 109456,
+        "seconds": 282.3582320213318
+      },
+      {
+        "cpu_percent": 23.7,
+        "rss_kib": 109744,
+        "seconds": 292.4344279766083
+      }
+    ],
+    "median_cpu_percent": 22.35,
+    "late_rss_mib_min": 105.15625,
+    "late_rss_mib_max": 107.34375
+  },
+  "after_layer": {
+    "duration_seconds": 300,
+    "samples": [
+      {
+        "cpu_percent": 14.6,
+        "rss_kib": 108944,
+        "seconds": 0.07025206089019775
+      },
+      {
+        "cpu_percent": 1.7,
+        "rss_kib": 116112,
+        "seconds": 10.145673990249634
+      },
+      {
+        "cpu_percent": 2.7,
+        "rss_kib": 113440,
+        "seconds": 20.21897304058075
+      },
+      {
+        "cpu_percent": 5.3,
+        "rss_kib": 120592,
+        "seconds": 30.305342078208923
+      },
+      {
+        "cpu_percent": 7.7,
+        "rss_kib": 121520,
+        "seconds": 40.37829005718231
+      },
+      {
+        "cpu_percent": 9.4,
+        "rss_kib": 121024,
+        "seconds": 50.45780599117279
+      },
+      {
+        "cpu_percent": 1.1,
+        "rss_kib": 120672,
+        "seconds": 60.53017699718475
+      },
+      {
+        "cpu_percent": 1.4,
+        "rss_kib": 120672,
+        "seconds": 70.61040198802948
+      },
+      {
+        "cpu_percent": 1.3,
+        "rss_kib": 120672,
+        "seconds": 80.68952107429504
+      },
+      {
+        "cpu_percent": 1.1,
+        "rss_kib": 120656,
+        "seconds": 90.77012300491333
+      },
+      {
+        "cpu_percent": 2.2,
+        "rss_kib": 120848,
+        "seconds": 100.8523610830307
+      },
+      {
+        "cpu_percent": 2.2,
+        "rss_kib": 120848,
+        "seconds": 110.92694401741028
+      },
+      {
+        "cpu_percent": 2,
+        "rss_kib": 120800,
+        "seconds": 121.0079630613327
+      },
+      {
+        "cpu_percent": 1.8,
+        "rss_kib": 120688,
+        "seconds": 131.0866950750351
+      },
+      {
+        "cpu_percent": 1.7,
+        "rss_kib": 120704,
+        "seconds": 141.16567409038544
+      },
+      {
+        "cpu_percent": 1.7,
+        "rss_kib": 120704,
+        "seconds": 151.24379003047943
+      },
+      {
+        "cpu_percent": 1.6,
+        "rss_kib": 120640,
+        "seconds": 161.31595504283905
+      },
+      {
+        "cpu_percent": 1.5,
+        "rss_kib": 120816,
+        "seconds": 171.38953804969788
+      },
+      {
+        "cpu_percent": 1.3,
+        "rss_kib": 120688,
+        "seconds": 181.4668710231781
+      },
+      {
+        "cpu_percent": 1.4,
+        "rss_kib": 120688,
+        "seconds": 191.5464709997177
+      },
+      {
+        "cpu_percent": 1.4,
+        "rss_kib": 120288,
+        "seconds": 201.62404799461365
+      },
+      {
+        "cpu_percent": 1.7,
+        "rss_kib": 120288,
+        "seconds": 211.69885003566742
+      },
+      {
+        "cpu_percent": 1.3,
+        "rss_kib": 120464,
+        "seconds": 221.77547597885132
+      },
+      {
+        "cpu_percent": 1.3,
+        "rss_kib": 120464,
+        "seconds": 231.85041499137878
+      },
+      {
+        "cpu_percent": 6.2,
+        "rss_kib": 120464,
+        "seconds": 241.92301905155182
+      },
+      {
+        "cpu_percent": 1.6,
+        "rss_kib": 120464,
+        "seconds": 251.99550807476044
+      },
+      {
+        "cpu_percent": 1.3,
+        "rss_kib": 120464,
+        "seconds": 262.06985902786255
+      },
+      {
+        "cpu_percent": 3.8,
+        "rss_kib": 120464,
+        "seconds": 272.1421800851822
+      },
+      {
+        "cpu_percent": 1.6,
+        "rss_kib": 120464,
+        "seconds": 282.22030806541443
+      },
+      {
+        "cpu_percent": 1.6,
+        "rss_kib": 120464,
+        "seconds": 292.3006500005722
+      }
+    ],
+    "median_cpu_percent": 1.65,
+    "late_rss_mib_min": 117.46875,
+    "late_rss_mib_max": 118.671875
+  }
+}
