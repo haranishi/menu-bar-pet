@@ -1,19 +1,38 @@
 import AppKit
 import Combine
-import QuartzCore
+import MenuBarPetCore
 import SwiftUI
-import UniformTypeIdentifiers
 
 @MainActor
 final class StatusItemController: NSObject {
     private let model: PetViewModel
+    private let aiUsage: AIUsageRepository
+    private let systemMonitor = SystemMonitor()
     private let statusItem: NSStatusItem
     private let popover = NSPopover()
+    private let imageView = StatusImageView()
+    private var imageSize: NSSize?
+    private let popoverVisibility = PopoverVisibility()
+    private let popoverPresentation = PopoverPresentation()
     private var cancellables = Set<AnyCancellable>()
+    private var frameTimer: Timer?
+    private var configuredFramesPerSecond: Double?
+    private var motionClock = PetMotionClock()
+    private var wheelClock = HamsterWheelClock()
+    private var lastFrameTime: TimeInterval?
+    private var accessibilityObserver: NSObjectProtocol?
+    private var customFrames: [NSImage] = []
+    private var lastTooltip: String?
+    private var lastAccessibilityLabel: String?
 
-    init(model: PetViewModel) {
+    init(model: PetViewModel, aiUsage: AIUsageRepository) {
         self.model = model
-        statusItem = NSStatusBar.system.statusItem(withLength: 44)
+        self.aiUsage = aiUsage
+        // 幅は合成画像まかせ（variableLength）。数値で length を代入してはいけない——
+        // macOS 26 のノッチ付き本体ディスプレイでは length の変更がホスト窓に反映されず、
+        // 項目の右側（数値）が黒くマスクされて見えなくなった（2026-09-16 実機。外部ディスプレイは正常）。
+        // variableLength なら反映される。CPU モードは合成側が 44pt の画像を返すので従来どおり。
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         super.init()
         configureStatusItem()
         configurePopover()
@@ -28,16 +47,25 @@ final class StatusItemController: NSObject {
         button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         button.toolTip = "メニューバーペット"
         button.setAccessibilityLabel("メニューバーペット")
-        button.wantsLayer = true
-        button.layer?.masksToBounds = false
+        // 数字はボタンに描かせず、キャラと1枚の画像に合成してから渡す（上端が切れるため）。
+        button.imagePosition = .imageOnly
+        button.attributedTitle = NSAttributedString(string: "")
+        imageView.frame = button.bounds
+        imageView.autoresizingMask = [.width, .height]
+        button.addSubview(imageView)
+        imageView.onAppearanceChanged = { [weak self] in self?.refreshStatusItem() }
     }
 
     private func configurePopover() {
         popover.behavior = .transient
-        popover.contentSize = NSSize(width: 310, height: 220)
-        popover.contentViewController = NSHostingController(rootView: PopoverView(
+        popover.delegate = self
+        popover.contentSize = NSSize(width: 360, height: 560)
+        popover.contentViewController = NSHostingController(rootView: PopoverMountGate(
+            visibility: popoverVisibility,
             model: model,
-            onChooseImage: { [weak self] in self?.chooseImage() },
+            systemMonitor: systemMonitor,
+            aiUsage: aiUsage,
+            presentation: popoverPresentation,
             onVisualSettingsChanged: { [weak self] in self?.refreshStatusItem() },
             onQuit: { NSApplication.shared.terminate(nil) }
         ))
@@ -45,75 +73,151 @@ final class StatusItemController: NSObject {
 
     private func observeModel() {
         model.$state
-            .combineLatest(model.$petImage, model.$isPaused)
+            .combineLatest(model.$character, model.$isPaused)
             .receive(on: RunLoop.main)
             .sink { [weak self] _, _, _ in self?.refreshStatusItem() }
+            .store(in: &cancellables)
+        model.$customFrameURLs
+            .receive(on: RunLoop.main)
+            .sink { [weak self] urls in
+                guard let self else { return }
+                self.customFrames = urls.compactMap { NSImage(contentsOf: $0) }
+                self.refreshStatusItem()
+            }
             .store(in: &cancellables)
         model.$cpuUsage
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 guard let self else { return }
                 self.statusItem.button?.setAccessibilityLabel(self.model.accessibilitySummary)
+                self.configureFrameTimer(reduceMotion: self.shouldReduceMotion)
             }
             .store(in: &cancellables)
+        // 数値表示は「読み取りが更新されたとき」と「設定が変わったとき」に描き直す。
+        aiUsage.$lastRefreshedAt
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.refreshReadout() }
+            .store(in: &cancellables)
+        model.$metricSource
+            .combineLatest(model.$showsMenuBarReadout, model.$aiUsageProviders)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _, _, _ in self?.refreshReadout() }
+            .store(in: &cancellables)
+
+        accessibilityObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.accessibilityDisplayOptionsDidChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in self?.refreshStatusItem() }
+        }
     }
 
     func refreshStatusItem() {
-        guard let button = statusItem.button else { return }
-        let reduceMotion = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion || model.isPaused
-        button.image = PetRenderer.render(
-            source: model.petImage,
+        let reduceMotion = shouldReduceMotion
+        renderFrame(reduceMotion: reduceMotion)
+        configureFrameTimer(reduceMotion: reduceMotion)
+        refreshReadout()
+    }
+
+    /// 数字が変わったら描き直す。合成方式なので、貼り替えるのは画像1枚だけ。
+    private func refreshReadout() {
+        renderFrame(reduceMotion: shouldReduceMotion)
+    }
+
+    private var shouldReduceMotion: Bool {
+        NSWorkspace.shared.accessibilityDisplayShouldReduceMotion || model.isPaused
+    }
+
+    private var animationFrameCount: Int {
+        model.character == .custom && !customFrames.isEmpty ? customFrames.count : (model.state == .resting ? 12 : 48)
+    }
+
+    private func configureFrameTimer(reduceMotion: Bool) {
+        guard !reduceMotion else {
+            frameTimer?.invalidate()
+            frameTimer = nil
+            configuredFramesPerSecond = nil
+            lastFrameTime = nil
+            return
+        }
+
+        let framesPerSecond = PetMotion.framesPerSecond(
             state: model.state,
-            phase: 0,
-            reduceMotion: true
+            cpu: model.cpuUsage,
+            frameCount: animationFrameCount
         )
-        button.setAccessibilityLabel(model.accessibilitySummary)
-        button.layer?.removeAllAnimations()
-        guard !reduceMotion else { return }
+        if let configuredFramesPerSecond,
+           frameTimer != nil,
+           abs(framesPerSecond - configuredFramesPerSecond) / configuredFramesPerSecond < 0.10 {
+            return
+        }
 
-        let bounce = CAKeyframeAnimation(keyPath: "transform.translation.y")
-        bounce.values = [0, amplitude(for: model.state), 0]
-        bounce.keyTimes = [0, 0.5, 1]
-
-        let tilt = CAKeyframeAnimation(keyPath: "transform.rotation.z")
-        let radians = tiltRadians(for: model.state)
-        tilt.values = [0, radians, 0]
-        tilt.keyTimes = [0, 0.5, 1]
-
-        let group = CAAnimationGroup()
-        group.animations = [bounce, tilt]
-        group.duration = duration(for: model.state)
-        group.repeatCount = .infinity
-        group.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-        group.isRemovedOnCompletion = false
-        button.layer?.add(group, forKey: "pet-motion")
-    }
-
-    private func duration(for state: PetState) -> CFTimeInterval {
-        switch state {
-        case .resting: 1.4
-        case .normal: 0.8
-        case .running: 0.52
-        case .sweating: 0.4
-        case .onFire: 0.3
+        frameTimer?.invalidate()
+        let interval = 1 / framesPerSecond
+        let timer = Timer(
+            timeInterval: interval,
+            target: self,
+            selector: #selector(drawNextFrame),
+            userInfo: nil,
+            repeats: true
+        )
+        timer.tolerance = interval * 0.15
+        RunLoop.main.add(timer, forMode: .common)
+        frameTimer = timer
+        configuredFramesPerSecond = framesPerSecond
+        if lastFrameTime == nil {
+            lastFrameTime = ProcessInfo.processInfo.systemUptime
         }
     }
 
-    private func amplitude(for state: PetState) -> CGFloat {
-        switch state {
-        case .resting: 0.5
-        case .normal: 1
-        case .running: 1.5
-        case .sweating, .onFire: 2
+    @objc private func drawNextFrame() {
+        guard !shouldReduceMotion else {
+            refreshStatusItem()
+            return
         }
+        let now = ProcessInfo.processInfo.systemUptime
+        let elapsed = lastFrameTime.map { max(0, now - $0) } ?? 0
+        lastFrameTime = now
+        motionClock.advance(elapsed: elapsed, cpu: model.cpuUsage)
+        wheelClock.advance(elapsed: elapsed, cpu: model.cpuUsage)
+        renderFrame(reduceMotion: false)
     }
 
-    private func tiltRadians(for state: PetState) -> CGFloat {
-        switch state {
-        case .resting, .normal: 0
-        case .running: -0.04
-        case .sweating: -0.07
-        case .onFire: -0.1
+    private func renderFrame(reduceMotion: Bool) {
+        guard let button = statusItem.button else { return }
+        let isDark = button.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+        let pet = PetRenderer.render(
+            character: model.character,
+            state: model.state,
+            phase: motionClock.phase,
+            wheelPhase: wheelClock.phase,
+            isDarkAppearance: isDark,
+            reduceMotion: reduceMotion,
+            customFrames: customFrames
+        )
+        let rows = model.menuBarRows
+        let image = MenuBarComposer.compose(pet: pet, rows: rows, isDark: isDark)
+        // Setting NSStatusBarButton.image on every tick also recalculates the menu-bar window.
+        // Keep image-driven variableLength sizing, then update only the drawing layer.
+        if imageSize != image.size {
+            imageSize = image.size
+            let sizingImage = NSImage(size: image.size)
+            sizingImage.isTemplate = false
+            button.image = sizingImage
+        }
+        imageView.display(image)
+        let tooltip = rows.isEmpty
+            ? "メニューバーペット"
+            : (model.menuBarTooltip ?? "メニューバーペット")
+        if tooltip != lastTooltip {
+            button.toolTip = tooltip
+            lastTooltip = tooltip
+        }
+        let summary = model.accessibilitySummary
+        if summary != lastAccessibilityLabel {
+            button.setAccessibilityLabel(summary)
+            lastAccessibilityLabel = summary
         }
     }
 
@@ -122,21 +226,25 @@ final class StatusItemController: NSObject {
         if popover.isShown {
             popover.performClose(nil)
         } else {
+            popoverVisibility.isVisible = true
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             NSApplication.shared.activate(ignoringOtherApps: true)
+            popover.contentViewController?.view.window?.makeKey()
         }
     }
+}
 
-    private func chooseImage() {
-        popover.performClose(nil)
-        let panel = NSOpenPanel()
-        panel.title = "ペットにする画像を選ぶ"
-        panel.message = "権利を持つ画像を選んでください。画像はこのMac内だけで処理します。"
-        panel.allowedContentTypes = [.png, .jpeg, .heic]
-        panel.allowsMultipleSelection = false
-        panel.canChooseDirectories = false
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-        model.importPetImage(from: url)
-        refreshStatusItem()
+// システム情報とAI残量のサンプリングはpopoverが開いている間だけ動かす（常駐負荷を増やさないため）。
+// AI残量は「動かす指標」に選ばれている間も回り続ける＝その判断はPetViewModelが持つ。
+extension StatusItemController: NSPopoverDelegate {
+    func popoverDidShow(_ notification: Notification) {
+        systemMonitor.start()
+        model.setPopoverVisible(true)
+    }
+
+    func popoverDidClose(_ notification: Notification) {
+        popoverVisibility.isVisible = false
+        systemMonitor.stop()
+        model.setPopoverVisible(false)
     }
 }

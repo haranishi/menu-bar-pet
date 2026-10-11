@@ -1,4 +1,5 @@
 import Foundation
+import MenuBarPetCore
 
 @MainActor
 protocol CPUSampling: AnyObject {
@@ -13,8 +14,9 @@ protocol SettingsStoring: AnyObject {
 }
 
 @MainActor
-protocol PetImageStoring: AnyObject {
-    func loadProcessedImage() -> Data?
-    func importImage(from sourceURL: URL) throws -> Data
-    func deleteImage() throws
+protocol AIUsageProviding: AnyObject {
+    var snapshots: [AIUsageSnapshot] { get }
+    func refresh()
+    /// 読み取りを回すかどうか。常駐中に無駄なディスクアクセスをしないための入り切り。
+    func setActive(_ active: Bool)
 }

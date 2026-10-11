@@ -1,0 +1,4 @@
+module CMbpCore {
+    header "include/mbp_core.h"
+    export *
+}

@@ -1,0 +1,19 @@
+[package]
+name = "menubar-pet-core"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "State, motion, local usage parsing and sampling for MenuBarPet"
+
+[lib]
+crate-type = ["staticlib", "rlib"]
+
+[dependencies]
+serde_json = "=1.0.151"
+libc = "=0.2.189"
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = "debuginfo"
